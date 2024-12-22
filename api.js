@@ -1,49 +1,41 @@
 const express = require('express');
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-// Middleware pour parser les requêtes JSON
+// Middleware pour permettre les requêtes JSON
 app.use(express.json());
 
-// Exemple de modèle d'IA simple
-function generateAIResponse(prompt) {
-    // Exemple de logique IA locale (remplacez par votre algorithme réel)
-    if (!prompt) return "Désolé, je n'ai pas compris votre demande.";
-    const responses = [
-        `Vous avez dit : "${prompt}". Voici ma réponse.`,
-        `Analyser : "${prompt}". Résultat : réussi.`,
-        `Désolé, je ne suis pas sûr de comprendre "${prompt}".`,
-    ];
-    // Retourne une réponse aléatoire
-    return responses[Math.floor(Math.random() * responses.length)];
-}
-
 // Endpoint principal
-app.post('/api/ai', (req, res) => {
-    const { prompt } = req.body;
+app.get('/rtm-ai', (req, res) => {
+    const question = req.query.q; // Récupère la question dans l'URL comme /rtm-ai/q=hello
 
-    if (!prompt) {
-        return res.status(400).json({ error: 'Le champ "prompt" est requis.' });
+    if (!question) {
+        return res.status(400).json({ error: "Veuillez fournir une question avec le paramètre 'q'." });
     }
 
-    // Générer une réponse via l'IA locale
-    const response = generateAIResponse(prompt);
+    // Simule une réponse basée sur la question
+    let response;
+    switch (question.toLowerCase()) {
+        case 'hello':
+            response = 'Bonjour! Comment puis-je vous aider? 😊';
+            break;
+        case 'qui es-tu':
+            response = "Je suis une intelligence artificielle créée par RTM Tafitaniaina. 🤖";
+            break;
+        default:
+            response = "Je n'ai pas compris votre question, mais je suis là pour vous aider! 🚀";
+    }
 
-    res.json({
-        success: true,
-        data: response,
-    });
+    // Envoie la réponse JSON
+    res.json({ question, response });
 });
 
-// Route par défaut
-app.get('/', (req, res) => {
-    res.send('Bienvenue sur l\'API IA 🌟 ! Utilisez /api/ai pour interagir.');
+// Gestion des erreurs pour les routes non définies
+app.use((req, res) => {
+    res.status(404).json({ error: "Cette route n'existe pas." });
 });
 
-// Lancer le serveur pour le développement local
+// Démarrage du serveur
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Serveur en cours d'exécution sur le port ${PORT}`);
 });
-
-// Exporter pour Vercel
-module.exports = app;
